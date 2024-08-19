@@ -1,0 +1,34 @@
+datasource db {
+  provider = "postgresql"  // Specifies the database type, in this case, PostgreSQL.
+  url      = env("DATABASE_URL")  // The connection URL for the database, stored in the .env file.
+}
+
+generator client {
+  provider = "prisma-client-js"  // Generates a Prisma Client for interacting with the database in JavaScript/TypeScript.
+}
+
+model Quote {
+  id           String   @id @default(uuid())  // The primary key, uniquely identifying each quote. Generated as a UUID.
+  text         String   // The actual text content of the quote.
+  createdAt    DateTime @default(now())  // Timestamp for when the quote was created. Defaults to the current time.
+  usedAt       DateTime?  // Optional timestamp for when the quote was last used in a post.
+  scheduledFor DateTime?  // Optional timestamp for when the quote is scheduled to be posted.
+  isUsed       Boolean  @default(false)  // Boolean flag indicating whether the quote has been used in a post. Defaults to false.
+  likes        Int?     @default(0)  // Optional integer representing the number of likes the quote has received. Defaults to 0.
+
+  tags         QuoteTags[]  // A one-to-many relationship with the QuoteTags model, representing the tags associated with this quote.
+}
+
+model Tag {
+  id    String   @id @default(uuid())  // The primary key, uniquely identifying each tag. Generated as a UUID.
+  name  String   // The name of the tag (e.g., 'humor', 'inspiration').
+  quotes QuoteTags[]  // A one-to-many relationship with the QuoteTags model, representing the quotes associated with this tag.
+}
+
+model QuoteTags {
+  id      String  @id @default(uuid())  // The primary key, uniquely identifying each QuoteTags entry. Generated as a UUID.
+  quoteId String  // Foreign key referencing the Quote model.
+  tagId   String  // Foreign key referencing the Tag model.
+  quote   Quote   @relation(fields: [quoteId], references: [id])  // Defines the relationship to the Quote model.
+  tag     Tag     @relation(fields: [tagId], references: [id])  // Defines the relationship to the Tag model.
+}
