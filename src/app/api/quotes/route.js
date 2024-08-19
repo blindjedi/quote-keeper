@@ -21,21 +21,41 @@ export async function POST(req) {
   try {
     const body = await req.json();
     const { text, scheduledFor, tags } = body;
+
+    if (!text) {
+      throw new Error('Text is required');
+    }
+
+    // Handle tags: create if they don't exist
+    let tagConnections = [];
+    if (tags && tags.length > 0) {
+      for (const tagName of tags) {
+        let tag = await prisma.tag.findUnique({ where: { name: tagName } });
+        if (!tag) {
+          // If the tag doesn't exist, create it
+          tag = await prisma.tag.create({ data: { name: tagName } });
+        }
+        tagConnections.push({ id: tag.id });
+      }
+    }
+
     const newQuote = await prisma.quote.create({
       data: {
         text,
         scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
         tags: {
-          connect: tags.map(tagId => ({ id: tagId })),
+          connect: tagConnections,
         },
       },
     });
+
     return new Response(JSON.stringify(newQuote), {
       status: 201,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to create quote' }), {
+    console.error('Error creating quote:', error);
+    return new Response(JSON.stringify({ error: 'Failed to create quote', details: error.message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
