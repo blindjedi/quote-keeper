@@ -8,13 +8,13 @@ export default function HomePage() {
         <p className="mb-8 text-lg text-gray-700">Your personal collection of inspiration, ready for action.</p>
         <div className="space-x-4">
           <Link href="/quotes">
-            <button className="btn btn-primary">View Quotes</button>
+            <button className="btn bg-blue-500 text-white hover:bg-blue-600">View Quotes</button>
           </Link>
           <Link href="/quotes/create">
-            <button className="btn btn-secondary">Add Quote</button>
+            <button className="btn bg-pink-500 text-white hover:bg-pink-600">Add Quote</button>
           </Link>
           <Link href="/quotes/bulk-import">
-            <button className="btn btn-secondary">Bulk Import</button>
+            <button className="btn bg-green-500 text-white hover:bg-green-600">Bulk Import</button>
           </Link>
         </div>
       </div>
