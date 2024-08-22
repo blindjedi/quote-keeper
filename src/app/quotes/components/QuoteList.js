@@ -8,7 +8,7 @@ export default function QuoteList({ quotes }) {
       {quotes.map((quote, index) => (
         <div
           key={quote.id}
-          className={`quote-tile ${backgroundClasses[index % backgroundClasses.length]} p-4 rounded shadow text-black`}
+          className={`quote-tile ${backgroundClasses[index % backgroundClasses.length]} p-6 rounded-lg shadow-md text-black`}
           style={{ whiteSpace: 'pre-line' }}
         >
           {quote.text.replace(/, /g, ',\n').replace(/\. /g, '.\n')}
