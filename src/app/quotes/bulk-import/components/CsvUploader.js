@@ -7,11 +7,7 @@ export default function CsvUploader({ onAddQuoteFromCsv }) {
     Papa.parse(file, {
       header: true,
       complete: function (results) {
-        results.data.forEach((row) => {
-          if (row.quote) {
-            onAddQuoteFromCsv(row.quote);
-          }
-        });
+        onAddQuoteFromCsv(results.data); // Send all rows as an array
       },
     });
   };
