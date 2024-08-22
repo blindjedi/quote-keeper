@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 export async function POST(req) {
   try {
-    const { quotes } = await req.json(); // Receive JSON data
+    const { quotes } = await req.json();
 
     if (!quotes || quotes.length === 0) {
       return new Response(JSON.stringify({ error: 'No quotes provided' }), {
@@ -14,13 +14,25 @@ export async function POST(req) {
     }
 
     let updatedCount = 0;
+    let skippedCount = 0;
 
     for (const quoteData of quotes) {
-      const { quote, isUsed, tags } = quoteData; // columns in csv file (quote, isUsed)
+      const { quote, scheduledFor, tags, isUsed } = quoteData;
 
       if (!quote) {
         console.error('Skipping a row without text:', quoteData);
         continue; // Skip this iteration if quote is missing
+      }
+
+      // Use `findFirst` to check if the quote already exists
+      const existingQuote = await prisma.quote.findFirst({
+        where: { text: quote },
+      });
+
+      if (existingQuote) {
+        console.log('Skipping duplicate quote:', quote);
+        skippedCount++;
+        continue; // Skip if the quote already exists
       }
 
       let tagConnections = [];
@@ -38,7 +50,8 @@ export async function POST(req) {
       await prisma.quote.create({
         data: {
           text: quote, // Use the `quote` field for `text`
-          isUsed: isUsed.toLowerCase() === 'true', // Convert 'true'/'false' string to boolean
+          scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
+          isUsed: isUsed.toLowerCase() === 'true', // Convert 'True'/'False' to boolean true/false
           tags: {
             connect: tagConnections,
           },
@@ -48,7 +61,7 @@ export async function POST(req) {
       updatedCount++;
     }
 
-    return new Response(JSON.stringify({ updatedQuotes: updatedCount }), {
+    return new Response(JSON.stringify({ updatedQuotes: updatedCount, skippedDuplicates: skippedCount }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
